@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "name": "stacksgate-api",
+  "functions": {
+    "api/index.ts": {
+      "maxDuration": 30
+    }
+  },
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/api/index.ts"
+    }
+  ]
+}
