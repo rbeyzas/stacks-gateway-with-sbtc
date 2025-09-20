@@ -14,6 +14,10 @@ epoch = "latest"
 path = "contracts/stacksgate-escrow.clar" 
 epoch = "latest"
 
+[contracts.custom-sbtc-token]
+path = "contracts/custom-sbtc-token.clar"
+epoch = "latest"
+
 [repl.analysis]
 passes = ["check_checker"]
 check_checker = { trusted_sender = false, trusted_caller = false, callee_filter = false }

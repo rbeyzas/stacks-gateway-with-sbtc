@@ -29,7 +29,11 @@ interface DashboardStats {
 export default function DashboardPage() {
   const apiRequest = useAuthenticatedRequest();
 
-  const { data: stats, isLoading, error } = useQuery<DashboardStats>({
+  const {
+    data: stats,
+    isLoading,
+    error,
+  } = useQuery<DashboardStats>({
     queryKey: ['dashboard-stats'],
     queryFn: () => apiRequest('/merchants/stats'),
     refetchInterval: 30000, // Refresh every 30 seconds
@@ -51,7 +55,7 @@ export default function DashboardPage() {
     );
   }
 
-  const successRate = stats?.total_payments 
+  const successRate = stats?.total_payments
     ? Math.round((stats.successful_payments / stats.total_payments) * 100)
     : 0;
 
@@ -180,9 +184,7 @@ export default function DashboardPage() {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-500">Success Rate</p>
-              <p className="text-xl font-semibold text-gray-900">
-                {successRate}%
-              </p>
+              <p className="text-xl font-semibold text-gray-900">{successRate}%</p>
             </div>
           </div>
         </div>
@@ -192,7 +194,10 @@ export default function DashboardPage() {
       <div className="card">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-semibold text-gray-900">Recent Payments</h2>
-          <a href="/payments" className="text-bitcoin-600 hover:text-bitcoin-500 text-sm font-medium">
+          <a
+            href="/payments"
+            className="text-bitcoin-600 hover:text-bitcoin-500 text-sm font-medium"
+          >
             View all
           </a>
         </div>
@@ -212,21 +217,11 @@ export default function DashboardPage() {
               <tbody>
                 {stats.recent_payments.map((payment) => (
                   <tr key={payment.id}>
-                    <td className="font-mono text-sm">
-                      {payment.id.substring(0, 12)}...
-                    </td>
-                    <td className="font-semibold">
-                      ₿ {formatBTC(payment.amount_sats)}
-                    </td>
-                    <td>
-                      {formatUSD(payment.amount_usd)}
-                    </td>
-                    <td>
-                      {getStatusBadge(payment.status)}
-                    </td>
-                    <td className="text-gray-500">
-                      {formatDate(payment.created_at)}
-                    </td>
+                    <td className="font-mono text-sm">{payment.id.substring(0, 12)}...</td>
+                    <td className="font-semibold">₿ {formatBTC(payment.amount_sats)}</td>
+                    <td>{formatUSD(payment.amount_usd)}</td>
+                    <td>{getStatusBadge(payment.status)}</td>
+                    <td className="text-gray-500">{formatDate(payment.created_at)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -239,10 +234,7 @@ export default function DashboardPage() {
             <p className="text-gray-500 mb-6">
               Start accepting sBTC payments by integrating our API or widget
             </p>
-            <a
-              href="/integration"
-              className="btn-primary"
-            >
+            <a href="/app/integration" className="btn-primary">
               View Integration Guide
             </a>
           </div>
@@ -253,30 +245,24 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="card text-center">
           <h3 className="text-lg font-semibold text-gray-900 mb-2">Integration</h3>
-          <p className="text-gray-600 mb-4">
-            Get started with our API and widget
-          </p>
-          <a href="/integration" className="btn-primary">
+          <p className="text-gray-600 mb-4">Get started with our API and widget</p>
+          <a href="/app/integration" className="btn-primary">
             View Docs
           </a>
         </div>
 
         <div className="card text-center">
           <h3 className="text-lg font-semibold text-gray-900 mb-2">Webhooks</h3>
-          <p className="text-gray-600 mb-4">
-            Configure payment notifications
-          </p>
-          <a href="/webhooks" className="btn-primary">
+          <p className="text-gray-600 mb-4">Configure payment notifications</p>
+          <a href="/app/webhooks" className="btn-primary">
             Setup Webhooks
           </a>
         </div>
 
         <div className="card text-center">
           <h3 className="text-lg font-semibold text-gray-900 mb-2">API Keys</h3>
-          <p className="text-gray-600 mb-4">
-            Manage your API credentials
-          </p>
-          <a href="/settings" className="btn-primary">
+          <p className="text-gray-600 mb-4">Manage your API credentials</p>
+          <a href="/app/settings" className="btn-primary">
             View Keys
           </a>
         </div>

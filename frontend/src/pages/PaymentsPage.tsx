@@ -38,16 +38,21 @@ export default function PaymentsPage() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedPayment, setSelectedPayment] = useState<PaymentIntent | null>(null);
 
-  const { data: paymentsData, isLoading, error, refetch } = useQuery<PaymentsResponse>({
+  const {
+    data: paymentsData,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery<PaymentsResponse>({
     queryKey: ['payments', searchTerm, statusFilter],
     queryFn: () => {
       const params = new URLSearchParams();
       params.set('limit', '50');
-      
+
       if (searchTerm) {
         params.set('search', searchTerm);
       }
-      
+
       if (statusFilter !== 'all') {
         params.set('status', statusFilter);
       }
@@ -105,14 +110,16 @@ export default function PaymentsPage() {
   const exportPayments = () => {
     const csvContent = [
       ['ID', 'Amount (BTC)', 'Amount (USD)', 'Status', 'Description', 'Created'].join(','),
-      ...payments.map(payment => [
-        payment.id,
-        formatBTC(payment.amount_sats),
-        payment.amount_usd?.toFixed(2) || '0',
-        payment.status,
-        payment.description || '',
-        formatDate(payment.created),
-      ].join(',')),
+      ...payments.map((payment) =>
+        [
+          payment.id,
+          formatBTC(payment.amount_sats),
+          payment.amount_usd?.toFixed(2) || '0',
+          payment.status,
+          payment.description || '',
+          formatDate(payment.created),
+        ].join(','),
+      ),
     ].join('\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv' });
@@ -191,14 +198,18 @@ export default function PaymentsPage() {
               {selectedPayment.stacks_address && (
                 <div>
                   <label className="text-sm font-medium text-gray-500">Stacks Address</label>
-                  <p className="font-mono text-sm mt-1 break-all">{selectedPayment.stacks_address}</p>
+                  <p className="font-mono text-sm mt-1 break-all">
+                    {selectedPayment.stacks_address}
+                  </p>
                 </div>
               )}
 
               {selectedPayment.bitcoin_address && (
                 <div>
                   <label className="text-sm font-medium text-gray-500">Bitcoin Address</label>
-                  <p className="font-mono text-sm mt-1 break-all">{selectedPayment.bitcoin_address}</p>
+                  <p className="font-mono text-sm mt-1 break-all">
+                    {selectedPayment.bitcoin_address}
+                  </p>
                 </div>
               )}
 
@@ -229,10 +240,7 @@ export default function PaymentsPage() {
             </div>
 
             <div className="mt-6 flex justify-end">
-              <button
-                onClick={() => setSelectedPayment(null)}
-                className="btn-secondary"
-              >
+              <button onClick={() => setSelectedPayment(null)} className="btn-secondary">
                 Close
               </button>
             </div>
@@ -250,7 +258,7 @@ export default function PaymentsPage() {
           <h1 className="text-2xl font-bold text-gray-900">Payments</h1>
           <p className="text-gray-600">Manage and track your sBTC payments</p>
         </div>
-        
+
         <button
           onClick={exportPayments}
           className="btn-secondary flex items-center space-x-2"
@@ -276,7 +284,7 @@ export default function PaymentsPage() {
               />
             </div>
           </div>
-          
+
           <div className="flex items-center space-x-2">
             <FunnelIcon className="h-5 w-5 text-gray-400" />
             <select
@@ -292,11 +300,8 @@ export default function PaymentsPage() {
               <option value="canceled">Canceled</option>
             </select>
           </div>
-          
-          <button
-            onClick={() => refetch()}
-            className="btn-secondary"
-          >
+
+          <button onClick={() => refetch()} className="btn-secondary">
             Refresh
           </button>
         </div>
@@ -329,21 +334,11 @@ export default function PaymentsPage() {
               <tbody>
                 {payments.map((payment) => (
                   <tr key={payment.id}>
-                    <td className="font-mono text-sm">
-                      {truncateId(payment.id)}
-                    </td>
-                    <td className="font-semibold">
-                      ₿ {formatBTC(payment.amount_sats)}
-                    </td>
-                    <td>
-                      {payment.amount_usd ? formatUSD(payment.amount_usd) : 'N/A'}
-                    </td>
-                    <td>
-                      {getStatusBadge(payment.status)}
-                    </td>
-                    <td className="max-w-xs truncate">
-                      {payment.description || '-'}
-                    </td>
+                    <td className="font-mono text-sm">{truncateId(payment.id)}</td>
+                    <td className="font-semibold">₿ {formatBTC(payment.amount_sats)}</td>
+                    <td>{payment.amount_usd ? formatUSD(payment.amount_usd) : 'N/A'}</td>
+                    <td>{getStatusBadge(payment.status)}</td>
+                    <td className="max-w-xs truncate">{payment.description || '-'}</td>
                     <td className="text-gray-500">
                       {new Date(payment.created * 1000).toLocaleDateString()}
                     </td>
@@ -364,19 +359,28 @@ export default function PaymentsPage() {
         ) : (
           <div className="text-center py-12">
             <div className="text-gray-300 mb-4">
-              <svg className="h-16 w-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+              <svg
+                className="h-16 w-16 mx-auto"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1}
+                  d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+                />
               </svg>
             </div>
             <h3 className="text-lg font-medium text-gray-900 mb-2">No payments found</h3>
             <p className="text-gray-500 mb-6">
-              {searchTerm || statusFilter !== 'all' 
-                ? 'Try adjusting your search or filter criteria' 
-                : 'Start accepting payments to see them here'
-              }
+              {searchTerm || statusFilter !== 'all'
+                ? 'Try adjusting your search or filter criteria'
+                : 'Start accepting payments to see them here'}
             </p>
             {!searchTerm && statusFilter === 'all' && (
-              <a href="/integration" className="btn-primary">
+              <a href="/app/integration" className="btn-primary">
                 View Integration Guide
               </a>
             )}
@@ -387,9 +391,7 @@ export default function PaymentsPage() {
       {/* Load More */}
       {paymentsData?.has_more && (
         <div className="text-center">
-          <button className="btn-secondary">
-            Load More Payments
-          </button>
+          <button className="btn-secondary">Load More Payments</button>
         </div>
       )}
 

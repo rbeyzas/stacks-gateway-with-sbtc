@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import LoadingSpinner from '@/components/LoadingSpinner';
-import logoImage from '../assets/stacksgate.png';
 
 export default function LoginPage() {
   const { user, login, isLoading } = useAuth();
@@ -33,7 +32,7 @@ export default function LoginPage() {
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [e.target.name]: e.target.value,
     }));
@@ -52,29 +51,17 @@ export default function LoginPage() {
       <div className="max-w-md w-full space-y-8">
         <div>
           <div className="flex justify-center items-center space-x-2 mb-2">
-            <img 
-              src={logoImage} 
-              alt="StacksGate" 
-              className="h-10 w-auto"
-            />
-            <h1 className="text-3xl font-bold text-bitcoin-500">
-              StacksGate
-            </h1>
+            <h1 className="text-3xl font-bold text-bitcoin-500">StacksGate</h1>
           </div>
-          <h2 className="text-center text-2xl font-bold text-gray-900">
-            Sign in to your account
-          </h2>
+          <h2 className="text-center text-2xl font-bold text-gray-900">Sign in to your account</h2>
           <p className="mt-2 text-center text-sm text-gray-600">
             Don't have an account?{' '}
-            <Link
-              to="/register"
-              className="font-medium text-bitcoin-600 hover:text-bitcoin-500"
-            >
+            <Link to="/register" className="font-medium text-bitcoin-600 hover:text-bitcoin-500">
               Sign up
             </Link>
           </p>
         </div>
-        
+
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {error && (
             <div className="bg-error-50 border border-error-200 text-error-700 px-4 py-3 rounded-md">
@@ -100,7 +87,7 @@ export default function LoginPage() {
                 disabled={isSubmitting}
               />
             </div>
-            
+
             <div>
               <label htmlFor="password" className="form-label">
                 Password

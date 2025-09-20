@@ -23,15 +23,15 @@ export default function IntegrationPage() {
   React.useEffect(() => {
     const fetchSecretKey = async () => {
       if (!token) return;
-      
+
       try {
         const response = await fetch(`${apiUrl}/merchants/keys`, {
           headers: {
-            'Authorization': `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
         });
-        
+
         if (response.ok) {
           const keys = await response.json();
           setSecretApiKey(keys.api_key_secret);
@@ -40,14 +40,14 @@ export default function IntegrationPage() {
         console.error('Failed to fetch API keys:', error);
       }
     };
-    
+
     fetchSecretKey();
   }, [token, apiUrl]);
 
   // Load StacksGate widget for live demo
   React.useEffect(() => {
     if (!secretApiKey) return; // Wait for secret key to be fetched
-    
+
     const script = document.createElement('script');
     script.src = import.meta.env.VITE_WIDGET_URL || 'http://localhost:3001/stacksgate.js';
     script.onload = () => {
@@ -55,7 +55,7 @@ export default function IntegrationPage() {
         (window as any).StacksGate.init({
           apiKey: secretApiKey,
           apiUrl: apiUrl,
-          testMode: true
+          testMode: true,
         });
         setWidgetLoaded(true);
       }
@@ -63,14 +63,14 @@ export default function IntegrationPage() {
     script.onerror = () => {
       console.error('Failed to load StacksGate widget');
     };
-    
+
     // Only load if not already loaded
     if (!document.querySelector('script[src*="stacksgate.js"]')) {
       document.head.appendChild(script);
     } else {
       setWidgetLoaded(true);
     }
-    
+
     return () => {
       // Cleanup function
       const existingScript = document.querySelector('script[src*="stacksgate.js"]');
@@ -94,7 +94,7 @@ export default function IntegrationPage() {
 
     try {
       setDemoLoading(true);
-      
+
       const container = document.getElementById('demo-widget-container');
       if (container) {
         container.innerHTML = '<p class="text-gray-500">Creating payment intent...</p>';
@@ -103,12 +103,12 @@ export default function IntegrationPage() {
       const paymentIntent = await (window as any).StacksGate.createPaymentIntent({
         amount: 0.001,
         description: 'Integration Demo Payment',
-        metadata: { demo: 'true', source: 'integration-page' }
+        metadata: { demo: 'true', source: 'integration-page' },
       });
 
       if (container) {
         container.innerHTML = '';
-        
+
         (window as any).StacksGate.createWidget(paymentIntent.id, {
           containerId: 'demo-widget-container',
           theme: 'light',
@@ -120,9 +120,10 @@ export default function IntegrationPage() {
           },
           onCancel: () => {
             if (container) {
-              container.innerHTML = '<p class="text-gray-500">Payment cancelled. Click "Create Demo Payment" to try again.</p>';
+              container.innerHTML =
+                '<p class="text-gray-500">Payment cancelled. Click "Create Demo Payment" to try again.</p>';
             }
-          }
+          },
         });
       }
     } catch (error) {
@@ -349,10 +350,20 @@ curl -X POST ${apiUrl}/payment-intents \\
 
 # Retrieve a payment intent
 curl ${apiUrl}/payment-intents/pi_1234567890 \\
-  -H "Authorization: Bearer sk_test_your_secret_key_here"`
+  -H "Authorization: Bearer sk_test_your_secret_key_here"`,
   };
 
-  const CodeBlock = ({ code, language, title, codeType }: { code: string; language: string; title: string; codeType: string }) => (
+  const CodeBlock = ({
+    code,
+    language,
+    title,
+    codeType,
+  }: {
+    code: string;
+    language: string;
+    title: string;
+    codeType: string;
+  }) => (
     <div className="bg-gray-900 rounded-lg overflow-hidden">
       <div className="flex items-center justify-between px-4 py-2 bg-gray-800">
         <span className="text-sm font-medium text-gray-300">{title}</span>
@@ -382,25 +393,25 @@ curl ${apiUrl}/payment-intents/pi_1234567890 \\
   const steps = [
     {
       icon: CodeBracketIcon,
-      title: "Get API Keys",
-      description: "Obtain your publishable and secret keys from the Settings page",
-      action: "Go to Settings",
-      href: "/settings"
+      title: 'Get API Keys',
+      description: 'Obtain your publishable and secret keys from the Settings page',
+      action: 'Go to Settings',
+      href: '/app/settings',
     },
     {
       icon: CubeIcon,
-      title: "Create Payment Intent",
-      description: "Use our API to create a payment intent on your server",
-      action: "See API docs",
-      href: "#api-docs"
+      title: 'Create Payment Intent',
+      description: 'Use our API to create a payment intent on your server',
+      action: 'See API docs',
+      href: '#api-docs',
     },
     {
       icon: LinkIcon,
-      title: "Add Widget",
-      description: "Include our JavaScript widget in your frontend",
-      action: "View examples",
-      href: "#widget-examples"
-    }
+      title: 'Add Widget',
+      description: 'Include our JavaScript widget in your frontend',
+      action: 'View examples',
+      href: '#widget-examples',
+    },
   ];
 
   return (
@@ -443,7 +454,7 @@ curl ${apiUrl}/payment-intents/pi_1234567890 \\
         <p className="text-gray-600 mb-6">
           Try the StacksGate widget right here! This is a fully functional demo using your API keys.
         </p>
-        
+
         <div className="bg-gray-50 rounded-lg p-6 mb-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-medium text-gray-900">Interactive Demo</h3>
@@ -452,15 +463,26 @@ curl ${apiUrl}/payment-intents/pi_1234567890 \\
               disabled={demoLoading || !widgetLoaded || !secretApiKey}
               className="bg-bitcoin-600 hover:bg-bitcoin-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-md font-medium"
             >
-              {demoLoading ? 'Creating...' : !secretApiKey ? 'Loading API Keys...' : widgetLoaded ? 'Create Demo Payment' : 'Loading Widget...'}
+              {demoLoading
+                ? 'Creating...'
+                : !secretApiKey
+                ? 'Loading API Keys...'
+                : widgetLoaded
+                ? 'Create Demo Payment'
+                : 'Loading Widget...'}
             </button>
           </div>
-          
-          <div id="demo-widget-container" className="min-h-[200px] bg-white rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center">
+
+          <div
+            id="demo-widget-container"
+            className="min-h-[200px] bg-white rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center"
+          >
             {!widgetLoaded ? (
               <p className="text-gray-500">Loading StacksGate widget...</p>
             ) : (
-              <p className="text-gray-500">Click "Create Demo Payment" to see the widget in action</p>
+              <p className="text-gray-500">
+                Click "Create Demo Payment" to see the widget in action
+              </p>
             )}
           </div>
         </div>
@@ -475,7 +497,6 @@ curl ${apiUrl}/payment-intents/pi_1234567890 \\
             <li>• {widgetLoaded ? '✅ Widget loaded successfully' : '⏳ Loading widget...'}</li>
           </ul>
         </div>
-
       </div>
 
       {/* Widget Integration */}
@@ -519,7 +540,7 @@ curl ${apiUrl}/payment-intents/pi_1234567890 \\
             title="Node.js Backend Example"
             codeType="server-api"
           />
-          
+
           <CodeBlock
             code={codeExamples.curlExample}
             language="bash"
@@ -541,15 +562,25 @@ curl ${apiUrl}/payment-intents/pi_1234567890 \\
           title="Webhook Handler Example"
           codeType="webhook-handler"
         />
-        
+
         <div className="mt-6 p-4 bg-blue-50 rounded-lg">
           <h3 className="font-medium text-blue-900 mb-2">Webhook Events</h3>
           <ul className="text-sm text-blue-800 space-y-1">
-            <li>• <code>payment_intent.created</code> - Payment intent created</li>
-            <li>• <code>payment_intent.processing</code> - Payment is being processed</li>
-            <li>• <code>payment_intent.succeeded</code> - Payment completed successfully</li>
-            <li>• <code>payment_intent.failed</code> - Payment failed</li>
-            <li>• <code>payment_intent.canceled</code> - Payment was canceled</li>
+            <li>
+              • <code>payment_intent.created</code> - Payment intent created
+            </li>
+            <li>
+              • <code>payment_intent.processing</code> - Payment is being processed
+            </li>
+            <li>
+              • <code>payment_intent.succeeded</code> - Payment completed successfully
+            </li>
+            <li>
+              • <code>payment_intent.failed</code> - Payment failed
+            </li>
+            <li>
+              • <code>payment_intent.canceled</code> - Payment was canceled
+            </li>
           </ul>
         </div>
       </div>
@@ -557,13 +588,11 @@ curl ${apiUrl}/payment-intents/pi_1234567890 \\
       {/* API Reference */}
       <div className="card">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">API Reference</h2>
-        
+
         <div className="space-y-6">
           <div>
             <h3 className="font-medium text-gray-900 mb-2">Base URL</h3>
-            <code className="text-sm bg-gray-100 px-2 py-1 rounded">
-              {apiUrl}
-            </code>
+            <code className="text-sm bg-gray-100 px-2 py-1 rounded">{apiUrl}</code>
           </div>
 
           <div>
@@ -580,17 +609,23 @@ curl ${apiUrl}/payment-intents/pi_1234567890 \\
             <h3 className="font-medium text-gray-900 mb-2">Key Endpoints</h3>
             <div className="space-y-2 text-sm">
               <div className="flex items-center space-x-4">
-                <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-medium w-16 text-center">POST</span>
+                <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-medium w-16 text-center">
+                  POST
+                </span>
                 <code>/payment-intents</code>
                 <span className="text-gray-600">Create a payment intent</span>
               </div>
               <div className="flex items-center space-x-4">
-                <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-medium w-16 text-center">GET</span>
+                <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-medium w-16 text-center">
+                  GET
+                </span>
                 <code>/payment-intents/:id</code>
                 <span className="text-gray-600">Retrieve a payment intent</span>
               </div>
               <div className="flex items-center space-x-4">
-                <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs font-medium w-16 text-center">POST</span>
+                <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs font-medium w-16 text-center">
+                  POST
+                </span>
                 <code>/payment-intents/:id/cancel</code>
                 <span className="text-gray-600">Cancel a payment intent</span>
               </div>
@@ -617,7 +652,7 @@ curl ${apiUrl}/payment-intents/pi_1234567890 \\
               </div>
             </div>
           </div>
-          
+
           <div>
             <h3 className="font-medium text-gray-900 mb-2">Test Network</h3>
             <p className="text-sm text-gray-600 mb-4">
@@ -643,7 +678,7 @@ curl ${apiUrl}/payment-intents/pi_1234567890 \\
             Our team is here to help you get started with StacksGate.
           </p>
           <div className="flex justify-center space-x-4">
-            <a href="/webhooks" className="btn-primary">
+            <a href="/app/webhooks" className="btn-primary">
               Setup Webhooks
             </a>
             <a href="mailto:support@stacksgate.com" className="btn-secondary">

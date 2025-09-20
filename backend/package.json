@@ -5,14 +5,18 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "echo 'Using tsx runtime - no compilation needed'",
-    "dev": "tsx watch src/index.ts", 
+    "dev": "tsx watch src/index.ts",
     "start": "tsx src/index.ts",
     "test": "jest",
     "test:watch": "jest --watch",
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",
     "migrate": "node dist/scripts/migrate.js",
-    "seed": "node dist/scripts/seed.js"
+    "seed": "node dist/scripts/seed.js",
+    "deploy:contract": "node ../deploy-contract.js",
+    "deploy:testnet": "STACKS_NETWORK=testnet node ../deploy-contract.js",
+    "deploy:mainnet": "STACKS_NETWORK=mainnet node ../deploy-contract.js",
+    "update:contract": "node ../update-contract-address.js"
   },
   "dependencies": {
     "@stacks/blockchain-api-client": "^7.0.0",

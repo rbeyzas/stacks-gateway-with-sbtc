@@ -50,7 +50,11 @@ export default function WebhooksPage() {
   });
 
   // Fetch webhook logs
-  const { data: logsData, isLoading: logsLoading, refetch: refetchLogs } = useQuery<WebhookLogsResponse>({
+  const {
+    data: logsData,
+    isLoading: logsLoading,
+    refetch: refetchLogs,
+  } = useQuery<WebhookLogsResponse>({
     queryKey: ['webhook-logs'],
     queryFn: () => apiRequest('/webhooks/logs?limit=50'),
     refetchInterval: 30000,
@@ -127,16 +131,20 @@ export default function WebhooksPage() {
                 <div>
                   <label className="text-sm font-medium text-gray-500">Event Type</label>
                   <p className="mt-1">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      eventTypeColors[selectedLog.event_type] || 'bg-gray-100 text-gray-800'
-                    }`}>
+                    <span
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        eventTypeColors[selectedLog.event_type] || 'bg-gray-100 text-gray-800'
+                      }`}
+                    >
                       {selectedLog.event_type}
                     </span>
                   </p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-500">Status</label>
-                  <p className="mt-1">{getStatusBadge(selectedLog.delivered, selectedLog.response_status)}</p>
+                  <p className="mt-1">
+                    {getStatusBadge(selectedLog.delivered, selectedLog.response_status)}
+                  </p>
                 </div>
               </div>
 
@@ -184,11 +192,8 @@ export default function WebhooksPage() {
                   <span>Retry Webhook</span>
                 </button>
               )}
-              
-              <button
-                onClick={() => setSelectedLog(null)}
-                className="btn-secondary ml-auto"
-              >
+
+              <button onClick={() => setSelectedLog(null)} className="btn-secondary ml-auto">
                 Close
               </button>
             </div>
@@ -206,7 +211,7 @@ export default function WebhooksPage() {
           <h1 className="text-2xl font-bold text-gray-900">Webhooks</h1>
           <p className="text-gray-600">Monitor webhook deliveries and test your endpoints</p>
         </div>
-        
+
         <button
           onClick={() => testWebhookMutation.mutate()}
           disabled={testWebhookMutation.isPending}
@@ -291,8 +296,12 @@ export default function WebhooksPage() {
           <div className="flex-1">
             <h3 className="text-sm font-medium text-gray-900">Webhook Configuration</h3>
             <p className="text-sm text-gray-600 mt-1">
-              Configure your webhook URL in <a href="/settings" className="text-bitcoin-600 hover:text-bitcoin-500">Settings</a> to receive payment notifications.
-              Make sure your endpoint returns a 200 status code and can handle webhook signature verification.
+              Configure your webhook URL in{' '}
+              <a href="/app/settings" className="text-bitcoin-600 hover:text-bitcoin-500">
+                Settings
+              </a>{' '}
+              to receive payment notifications. Make sure your endpoint returns a 200 status code
+              and can handle webhook signature verification.
             </p>
           </div>
         </div>
@@ -339,24 +348,32 @@ export default function WebhooksPage() {
                       </div>
                     </td>
                     <td>
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        eventTypeColors[log.event_type] || 'bg-gray-100 text-gray-800'
-                      }`}>
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          eventTypeColors[log.event_type] || 'bg-gray-100 text-gray-800'
+                        }`}
+                      >
                         {log.event_type}
                       </span>
                     </td>
                     <td className="font-mono text-sm">
-                      {log.payment_intent_id ? 
-                        `${log.payment_intent_id.substring(0, 8)}...${log.payment_intent_id.substring(log.payment_intent_id.length - 4)}` 
-                        : '-'
-                      }
+                      {log.payment_intent_id
+                        ? `${log.payment_intent_id.substring(
+                            0,
+                            8,
+                          )}...${log.payment_intent_id.substring(log.payment_intent_id.length - 4)}`
+                        : '-'}
                     </td>
                     <td>
-                      <span className={`text-sm ${
-                        log.response_status && log.response_status >= 200 && log.response_status < 300
-                          ? 'text-success-600'
-                          : 'text-error-600'
-                      }`}>
+                      <span
+                        className={`text-sm ${
+                          log.response_status &&
+                          log.response_status >= 200 &&
+                          log.response_status < 300
+                            ? 'text-success-600'
+                            : 'text-error-600'
+                        }`}
+                      >
                         {log.response_status || 'No response'}
                       </span>
                     </td>
@@ -386,7 +403,7 @@ export default function WebhooksPage() {
               Configure a webhook URL in Settings to start receiving payment notifications
             </p>
             <div className="space-x-4">
-              <a href="/settings" className="btn-primary">
+              <a href="/app/settings" className="btn-primary">
                 Configure Webhooks
               </a>
               <button
@@ -412,14 +429,14 @@ export default function WebhooksPage() {
               </span>
               <span className="text-sm text-gray-600">Payment intent created</span>
             </div>
-            
+
             <div className="flex items-center space-x-3">
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
                 payment_intent.processing
               </span>
               <span className="text-sm text-gray-600">Payment is being processed</span>
             </div>
-            
+
             <div className="flex items-center space-x-3">
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-success-100 text-success-800">
                 payment_intent.succeeded
@@ -427,7 +444,7 @@ export default function WebhooksPage() {
               <span className="text-sm text-gray-600">Payment completed successfully</span>
             </div>
           </div>
-          
+
           <div className="space-y-3">
             <div className="flex items-center space-x-3">
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-error-100 text-error-800">
@@ -435,14 +452,14 @@ export default function WebhooksPage() {
               </span>
               <span className="text-sm text-gray-600">Payment failed</span>
             </div>
-            
+
             <div className="flex items-center space-x-3">
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
                 payment_intent.canceled
               </span>
               <span className="text-sm text-gray-600">Payment was canceled</span>
             </div>
-            
+
             <div className="flex items-center space-x-3">
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
                 test.webhook

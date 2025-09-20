@@ -35,13 +35,14 @@ export class WalletConnector extends EventEmitter {
       // Check if Stacks Connect has existing session
       if (typeof window !== 'undefined' && (window as any).StacksProvider) {
         const provider = (window as any).StacksProvider;
-        
+
         // Check if already connected
         if (provider.isSignedIn && provider.isSignedIn()) {
           const userData = provider.loadUserData();
           if (userData && userData.profile && userData.profile.stxAddress) {
             this.userData = { userSession: provider };
-            const address = userData.profile.stxAddress.testnet || userData.profile.stxAddress.mainnet;
+            const address =
+              userData.profile.stxAddress.testnet || userData.profile.stxAddress.mainnet;
             await this.updateConnectionState(address);
           }
         }
@@ -52,7 +53,8 @@ export class WalletConnector extends EventEmitter {
       if (savedUserData && !this.state.isConnected) {
         const userData = JSON.parse(savedUserData);
         if (userData && userData.profile && userData.profile.stxAddress) {
-          const address = userData.profile.stxAddress.testnet || userData.profile.stxAddress.mainnet;
+          const address =
+            userData.profile.stxAddress.testnet || userData.profile.stxAddress.mainnet;
           await this.updateConnectionState(address);
         }
       }
@@ -86,11 +88,12 @@ export class WalletConnector extends EventEmitter {
             try {
               this.userData = data;
               const userData = data.userSession.loadUserData();
-              const address = userData.profile.stxAddress.testnet || userData.profile.stxAddress.mainnet;
-              
+              const address =
+                userData.profile.stxAddress.testnet || userData.profile.stxAddress.mainnet;
+
               // Save user data to localStorage for persistence
               localStorage.setItem('stacksUserData', JSON.stringify(userData));
-              
+
               this.updateConnectionState(address);
               this.emit('connected', { address, data });
               resolve(address);
@@ -121,10 +124,10 @@ export class WalletConnector extends EventEmitter {
       if (this.userData && this.userData.userSession) {
         this.userData.userSession.signUserOut();
       }
-      
+
       // Clear localStorage
       localStorage.removeItem('stacksUserData');
-      
+
       // Reset state
       this.state = {
         isConnected: false,
@@ -178,13 +181,13 @@ export class WalletConnector extends EventEmitter {
     try {
       // In a real implementation, you would call the StacksGate API or Stacks API
       // to get the sBTC balance. For now, we'll mock this.
-      
+
       // Mock balance - in production, fetch from actual sBTC contract
       const balance = 0; // await this.getSBTCBalance(this.state.address);
-      
+
       this.state.balance = balance;
       this.emit('balance_updated', { balance, address: this.state.address });
-      
+
       return balance;
     } catch (error) {
       console.error('Failed to fetch sBTC balance:', error);
@@ -202,9 +205,9 @@ export class WalletConnector extends EventEmitter {
       // For sBTC payments, we need to call the sBTC contract
       // This is a simplified version - in production, you'd need to construct
       // the proper contract call based on the sBTC implementation
-      
-      const contractAddress = 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM'; // Testnet sBTC contract
-      const contractName = 'sbtc-token';
+
+      const contractAddress = 'ST21XV7WHC8WT5NKD6ZEWWSD9P2RG6BPXS2JGHYKP'; // Custom sBTC contract
+      const contractName = 'custom-sbtc-token';
       const functionName = 'transfer';
 
       return new Promise((resolve, reject) => {
@@ -241,7 +244,7 @@ export class WalletConnector extends EventEmitter {
   // Check if wallet extension is installed
   static isWalletAvailable(): boolean {
     return !!(
-      (window as any).LeatherProvider || 
+      (window as any).LeatherProvider ||
       (window as any).XverseProviders ||
       (window as any).StacksProvider
     );
@@ -250,15 +253,15 @@ export class WalletConnector extends EventEmitter {
   // Get list of available wallets
   static getAvailableWallets(): string[] {
     const wallets: string[] = [];
-    
+
     if ((window as any).LeatherProvider) {
       wallets.push('Leather');
     }
-    
+
     if ((window as any).XverseProviders) {
       wallets.push('Xverse');
     }
-    
+
     return wallets;
   }
 

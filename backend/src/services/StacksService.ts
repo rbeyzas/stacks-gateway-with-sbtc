@@ -1,8 +1,4 @@
-import {
-  StacksTestnet,
-  StacksMainnet,
-  StacksNetwork,
-} from '@stacks/network';
+import { StacksTestnet, StacksMainnet, StacksNetwork } from '@stacks/network';
 import {
   makeSTXTokenTransfer,
   makeContractCall,
@@ -57,7 +53,7 @@ export class StacksService {
   constructor() {
     const networkType = process.env.STACKS_NETWORK || 'testnet';
     this.isMainnet = networkType === 'mainnet';
-    
+
     if (this.isMainnet) {
       this.network = new StacksMainnet();
       this.apiUrl = process.env.STACKS_API_URL || 'https://api.mainnet.hiro.so';
@@ -92,7 +88,7 @@ export class StacksService {
     const privateKey = createStacksPrivateKey();
     const address = getAddressFromPrivateKey(
       privateKey.data,
-      this.isMainnet ? TransactionVersion.Mainnet : TransactionVersion.Testnet
+      this.isMainnet ? TransactionVersion.Mainnet : TransactionVersion.Testnet,
     );
 
     return {
@@ -102,9 +98,12 @@ export class StacksService {
   }
 
   // Monitor sBTC deposit transactions
-  async monitorSBTCDeposit(bitcoinTxid: string, expectedAmount: number): Promise<TransactionStatus> {
+  async monitorSBTCDeposit(
+    bitcoinTxid: string,
+    expectedAmount: number,
+  ): Promise<TransactionStatus> {
     const cacheKey = `sbtc_deposit:${bitcoinTxid}`;
-    
+
     try {
       // Check cache first
       const cachedStatus = await cacheGet<TransactionStatus>(cacheKey);
@@ -114,7 +113,7 @@ export class StacksService {
 
       // First, check if the Bitcoin transaction exists and is confirmed
       const btcResponse = await fetch(`${this.apiUrl}/extended/v1/tx/${bitcoinTxid}`);
-      
+
       if (!btcResponse.ok) {
         if (btcResponse.status === 404) {
           // Transaction not found yet
@@ -129,7 +128,7 @@ export class StacksService {
       }
 
       const btcTxData = await btcResponse.json();
-      
+
       // Check if Bitcoin transaction is confirmed
       if (!btcTxData.canonical || btcTxData.tx_status !== 'success') {
         const status: TransactionStatus = {
@@ -144,15 +143,18 @@ export class StacksService {
 
       // Look for sBTC contract events related to this transaction
       const eventsResponse = await fetch(`${this.apiUrl}/extended/v1/tx/${bitcoinTxid}/events`);
-      
+
       if (eventsResponse.ok) {
         const eventsData = await eventsResponse.json();
-        
+
         // Look for sBTC mint events
-        const sbtcEvent = eventsData.events?.find((event: any) => 
-          event.event_type === 'smart_contract_log' &&
-          (event.contract_log?.contract_id?.includes('sbtc') || 
-           event.contract_log?.contract_id?.includes('ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM'))
+        const sbtcEvent = eventsData.events?.find(
+          (event: any) =>
+            event.event_type === 'smart_contract_log' &&
+            (event.contract_log?.contract_id?.includes('sbtc') ||
+              event.contract_log?.contract_id?.includes(
+                'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM',
+              )),
         );
 
         if (sbtcEvent) {
@@ -179,17 +181,17 @@ export class StacksService {
       // Cache based on status
       const cacheTime = status.status === 'confirmed' ? 300 : 30;
       await cacheSet(cacheKey, status, cacheTime);
-      
+
       return status;
     } catch (error) {
       logger.error('Failed to monitor sBTC deposit:', { bitcoinTxid, error });
-      
+
       const errorStatus: TransactionStatus = {
         txid: bitcoinTxid,
         status: 'failed',
         error: (error as Error).message,
       };
-      
+
       // Cache error status for a short time
       await cacheSet(cacheKey, errorStatus, 60);
       return errorStatus;
@@ -199,7 +201,7 @@ export class StacksService {
   // Get sBTC balance for an address
   async getSBTCBalance(address: string): Promise<number> {
     const cacheKey = `sbtc_balance:${address}`;
-    
+
     try {
       // Check cache first
       const cachedBalance = await cacheGet<number>(cacheKey);
@@ -208,15 +210,15 @@ export class StacksService {
       }
 
       // Get sBTC contract address - using official testnet contract
-      const sbtcTokenContract = process.env.SBTC_TOKEN_CONTRACT || 
-        (this.isMainnet 
-          ? 'SP3DX3H4FEYZJZ586MFBS25ZW3HZDMEW92260R2PR.sbtc-token' 
-          : 'ST1F7QA2MDF17S807EPA36TSS8AMEFY4KA9TVGWXT.sbtc-token'
-        );
-      
+      const sbtcTokenContract =
+        process.env.SBTC_TOKEN_CONTRACT ||
+        (this.isMainnet
+          ? 'SP3DX3H4FEYZJZ586MFBS25ZW3HZDMEW92260R2PR.sbtc-token'
+          : 'ST21XV7WHC8WT5NKD6ZEWWSD9P2RG6BPXS2JGHYKP.custom-sbtc-token');
+
       // Use the fungible token balance endpoint
       const response = await fetch(
-        `${this.apiUrl}/extended/v1/tokens/ft/${sbtcTokenContract}/balances/${address}`
+        `${this.apiUrl}/extended/v1/tokens/ft/${sbtcTokenContract}/balances/${address}`,
       );
 
       if (!response.ok) {
@@ -233,9 +235,9 @@ export class StacksService {
 
       // Cache for 30 seconds
       await cacheSet(cacheKey, balance, 30);
-      
+
       logger.debug('Retrieved sBTC balance', { address, balance, contract: sbtcTokenContract });
-      
+
       return balance;
     } catch (error) {
       logger.error('Failed to get sBTC balance:', { address, error });
@@ -246,19 +248,25 @@ export class StacksService {
   }
 
   // Transfer sBTC tokens (SIP-010 compliant)
-  async transferSBTC(recipientAddress: string, amount: number, senderPrivateKey: string, memo?: string): Promise<string> {
+  async transferSBTC(
+    recipientAddress: string,
+    amount: number,
+    senderPrivateKey: string,
+    memo?: string,
+  ): Promise<string> {
     try {
       const senderAddress = getAddressFromPrivateKey(
         senderPrivateKey,
-        this.isMainnet ? TransactionVersion.Mainnet : TransactionVersion.Testnet
+        this.isMainnet ? TransactionVersion.Mainnet : TransactionVersion.Testnet,
       );
 
       // Get sBTC token contract
-      const [contractAddress, contractName] = (process.env.SBTC_TOKEN_CONTRACT || 
-        (this.isMainnet 
-          ? 'SP3DX3H4FEYZJZ586MFBS25ZW3HZDMEW92260R2PR.sbtc-token' 
-          : 'ST1F7QA2MDF17S807EPA36TSS8AMEFY4KA9TVGWXT.sbtc-token'
-        )).split('.');
+      const [contractAddress, contractName] = (
+        process.env.SBTC_TOKEN_CONTRACT ||
+        (this.isMainnet
+          ? 'SP3DX3H4FEYZJZ586MFBS25ZW3HZDMEW92260R2PR.sbtc-token'
+          : 'ST21XV7WHC8WT5NKD6ZEWWSD9P2RG6BPXS2JGHYKP.custom-sbtc-token')
+      ).split('.');
 
       // Create SIP-010 transfer transaction
       const txOptions = {
@@ -268,8 +276,8 @@ export class StacksService {
         functionArgs: [
           uintCV(amount), // amount
           standardPrincipalCV(senderAddress), // sender
-          standardPrincipalCV(recipientAddress), // recipient  
-          memo ? bufferCVFromString(memo) : noneCV() // memo
+          standardPrincipalCV(recipientAddress), // recipient
+          memo ? bufferCVFromString(memo) : noneCV(), // memo
         ],
         senderKey: senderPrivateKey,
         network: this.network,
@@ -285,7 +293,7 @@ export class StacksService {
         senderAddress,
         recipientAddress,
         amount,
-        contract: `${contractAddress}.${contractName}`
+        contract: `${contractAddress}.${contractName}`,
       });
 
       return txid;
@@ -296,16 +304,22 @@ export class StacksService {
   }
 
   // Initiate sBTC deposit using official deposit contract
-  async initiateSBTCDeposit(amount: number, recipientAddress: string, senderPrivateKey: string): Promise<string> {
+  async initiateSBTCDeposit(
+    amount: number,
+    recipientAddress: string,
+    senderPrivateKey: string,
+  ): Promise<string> {
     try {
       const senderAddress = getAddressFromPrivateKey(
         senderPrivateKey,
-        this.isMainnet ? TransactionVersion.Mainnet : TransactionVersion.Testnet
+        this.isMainnet ? TransactionVersion.Mainnet : TransactionVersion.Testnet,
       );
 
       // Get sBTC deposit contract
-      const [contractAddress, contractName] = (process.env.SBTC_DEPOSIT_CONTRACT || 
-        'SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4.sbtc-deposit').split('.');
+      const [contractAddress, contractName] = (
+        process.env.SBTC_DEPOSIT_CONTRACT ||
+        'SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4.sbtc-deposit'
+      ).split('.');
 
       // Create deposit transaction
       const txOptions = {
@@ -315,7 +329,7 @@ export class StacksService {
         functionArgs: [
           uintCV(amount), // amount in sats
           standardPrincipalCV(recipientAddress), // recipient
-          bufferCVFromString('StacksGate deposit') // memo
+          bufferCVFromString('StacksGate deposit'), // memo
         ],
         senderKey: senderPrivateKey,
         network: this.network,
@@ -331,7 +345,7 @@ export class StacksService {
         senderAddress,
         recipientAddress,
         amount,
-        contract: `${contractAddress}.${contractName}`
+        contract: `${contractAddress}.${contractName}`,
       });
 
       return txid;
@@ -341,17 +355,22 @@ export class StacksService {
     }
   }
 
-  // Initiate sBTC withdrawal  
-  async initiateSBTCWithdrawal(params: SBTCWithdrawalParams, senderPrivateKey: string): Promise<string> {
+  // Initiate sBTC withdrawal
+  async initiateSBTCWithdrawal(
+    params: SBTCWithdrawalParams,
+    senderPrivateKey: string,
+  ): Promise<string> {
     try {
       const senderAddress = getAddressFromPrivateKey(
         senderPrivateKey,
-        this.isMainnet ? TransactionVersion.Mainnet : TransactionVersion.Testnet
+        this.isMainnet ? TransactionVersion.Mainnet : TransactionVersion.Testnet,
       );
 
       // Get sBTC deposit contract (handles both deposits and withdrawals)
-      const [contractAddress, contractName] = (process.env.SBTC_DEPOSIT_CONTRACT || 
-        'SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4.sbtc-deposit').split('.');
+      const [contractAddress, contractName] = (
+        process.env.SBTC_DEPOSIT_CONTRACT ||
+        'SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4.sbtc-deposit'
+      ).split('.');
 
       // Create withdrawal transaction
       const txOptions = {
@@ -361,7 +380,7 @@ export class StacksService {
         functionArgs: [
           uintCV(params.amountSats), // amount in sats
           bufferCVFromString(params.bitcoinAddress), // bitcoin address
-          bufferCVFromString(params.memo || 'StacksGate withdrawal') // memo
+          bufferCVFromString(params.memo || 'StacksGate withdrawal'), // memo
         ],
         senderKey: senderPrivateKey,
         network: this.network,
@@ -377,7 +396,7 @@ export class StacksService {
         senderAddress,
         bitcoinAddress: params.bitcoinAddress,
         amountSats: params.amountSats,
-        contract: `${contractAddress}.${contractName}`
+        contract: `${contractAddress}.${contractName}`,
       });
 
       return txid;
@@ -390,7 +409,7 @@ export class StacksService {
   // Get transaction status
   async getTransactionStatus(txid: string): Promise<TransactionStatus> {
     const cacheKey = `tx_status:${txid}`;
-    
+
     try {
       // Check cache first
       const cachedStatus = await cacheGet<TransactionStatus>(cacheKey);
@@ -399,17 +418,20 @@ export class StacksService {
       }
 
       const response = await fetch(`${this.apiUrl}/extended/v1/tx/${txid}`);
-      
+
       if (!response.ok) {
         throw new Error(`Failed to fetch transaction status: ${response.statusText}`);
       }
 
       const data = await response.json();
-      
+
       let status: 'pending' | 'confirmed' | 'failed';
       if (data.tx_status === 'success') {
         status = 'confirmed';
-      } else if (data.tx_status === 'abort_by_response' || data.tx_status === 'abort_by_post_condition') {
+      } else if (
+        data.tx_status === 'abort_by_response' ||
+        data.tx_status === 'abort_by_post_condition'
+      ) {
         status = 'failed';
       } else {
         status = 'pending';
@@ -426,11 +448,11 @@ export class StacksService {
       // Cache confirmed/failed transactions for longer
       const cacheTime = status === 'pending' ? 30 : 300; // 30s for pending, 5min for final
       await cacheSet(cacheKey, result, cacheTime);
-      
+
       return result;
     } catch (error) {
       logger.error('Failed to get transaction status:', { txid, error });
-      
+
       return {
         txid,
         status: 'failed',
@@ -455,7 +477,7 @@ export class StacksService {
   // Get current Bitcoin price in USD (for sBTC conversion)
   async getBitcoinPriceUSD(): Promise<number> {
     const cacheKey = 'btc_price_usd';
-    
+
     try {
       // Check cache first (5 minute cache)
       const cachedPrice = await cacheGet<number>(cacheKey);
@@ -468,18 +490,18 @@ export class StacksService {
         {
           name: 'coinbase',
           url: 'https://api.coinbase.com/v2/exchange-rates?currency=BTC',
-          parser: (data: any) => parseFloat(data.data.rates.USD)
+          parser: (data: any) => parseFloat(data.data.rates.USD),
         },
         {
           name: 'coingecko',
           url: 'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd',
-          parser: (data: any) => data.bitcoin.usd
+          parser: (data: any) => data.bitcoin.usd,
         },
         {
           name: 'kraken',
           url: 'https://api.kraken.com/0/public/Ticker?pair=XBTUSD',
-          parser: (data: any) => parseFloat(Object.values(data.result)[0].c[0])
-        }
+          parser: (data: any) => parseFloat(Object.values(data.result)[0].c[0]),
+        },
       ];
 
       for (const source of priceSources) {
@@ -487,7 +509,7 @@ export class StacksService {
           const response = await fetch(source.url, {
             timeout: 5000, // 5 second timeout per source
           });
-          
+
           if (!response.ok) continue;
 
           const data = await response.json();
@@ -496,7 +518,7 @@ export class StacksService {
           if (price && price > 0) {
             // Cache for 5 minutes
             await cacheSet(cacheKey, price, 300);
-            
+
             logger.debug('Retrieved Bitcoin price', { source: source.name, price });
             return price;
           }
@@ -510,18 +532,18 @@ export class StacksService {
       throw new Error('All price sources failed');
     } catch (error) {
       logger.error('Failed to get Bitcoin price from all sources:', error);
-      
+
       // Return cached price if available
       const cachedPrice = await cacheGet<number>(cacheKey);
       if (cachedPrice !== null) {
         logger.info('Using cached Bitcoin price as fallback', { price: cachedPrice });
         return cachedPrice;
       }
-      
+
       // Final fallback price (approximate current BTC price)
       const fallbackPrice = 45000;
       logger.warn('Using fallback Bitcoin price', { price: fallbackPrice });
-      
+
       // Cache fallback for a short time
       await cacheSet(cacheKey, fallbackPrice, 60);
       return fallbackPrice;
@@ -543,7 +565,7 @@ export class StacksService {
   async getNetworkInfo(): Promise<any> {
     try {
       const response = await fetch(`${this.apiUrl}/v2/info`);
-      
+
       if (!response.ok) {
         throw new Error(`Failed to fetch network info: ${response.statusText}`);
       }

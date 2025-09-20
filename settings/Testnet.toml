@@ -1,0 +1,15 @@
+[network]
+name = "testnet"
+stacks_node_rpc_address = "https://api.testnet.stacks.co"
+stacks_node_rpc_port = 443
+stacks_node_p2p_address = "https://api.testnet.stacks.co"
+stacks_node_p2p_port = 443
+stacks_api_address = "https://api.testnet.stacks.co"
+stacks_api_port = 443
+chain_id = 2147483648
+
+[accounts]
+# Your testnet account
+[accounts.deployer]
+mnemonic = "blind remove canvas leg fine sausage undo silent owner among ring poem cash debate armor travel bonus brush vacant spy elevator typical portion style"
+balance = 1000000000000

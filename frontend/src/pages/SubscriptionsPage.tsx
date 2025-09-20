@@ -51,7 +51,7 @@ const statusColors = {
 
 const intervalLabels = {
   day: 'Daily',
-  week: 'Weekly', 
+  week: 'Weekly',
   month: 'Monthly',
   year: 'Yearly',
 };
@@ -59,34 +59,38 @@ const intervalLabels = {
 export default function SubscriptionsPage() {
   const apiRequest = useAuthenticatedRequest();
   const queryClient = useQueryClient();
-  
+
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedSubscription, setSelectedSubscription] = useState<Subscription | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
 
   // Fetch subscriptions
-  const { data: subscriptionsData, isLoading, error } = useQuery<SubscriptionsResponse>({
+  const {
+    data: subscriptionsData,
+    isLoading,
+    error,
+  } = useQuery<SubscriptionsResponse>({
     queryKey: ['subscriptions', searchTerm, statusFilter],
     queryFn: () => {
       const params = new URLSearchParams();
       params.set('limit', '50');
-      
+
       if (searchTerm) {
         params.set('search', searchTerm);
       }
-      
+
       if (statusFilter && statusFilter !== 'all') {
         params.set('status', statusFilter);
       }
-      
+
       return apiRequest(`/subscriptions?${params.toString()}`);
     },
   });
 
   // Cancel subscription mutation
   const cancelSubscriptionMutation = useMutation({
-    mutationFn: (subscriptionId: string) => 
+    mutationFn: (subscriptionId: string) =>
       apiRequest(`/subscriptions/${subscriptionId}/cancel`, { method: 'POST' }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['subscriptions'] });
@@ -113,9 +117,12 @@ export default function SubscriptionsPage() {
   };
 
   const getStatusBadge = (status: string) => {
-    const colorClass = statusColors[status as keyof typeof statusColors] || 'bg-gray-100 text-gray-800';
+    const colorClass =
+      statusColors[status as keyof typeof statusColors] || 'bg-gray-100 text-gray-800';
     return (
-      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${colorClass}`}>
+      <span
+        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${colorClass}`}
+      >
         {status.charAt(0).toUpperCase() + status.slice(1).replace('_', ' ')}
       </span>
     );
@@ -162,7 +169,10 @@ export default function SubscriptionsPage() {
                 <div>
                   <label className="text-sm font-medium text-gray-500">Billing Cycle</label>
                   <p className="mt-1">
-                    {formatInterval(selectedSubscription.interval, selectedSubscription.interval_count)}
+                    {formatInterval(
+                      selectedSubscription.interval,
+                      selectedSubscription.interval_count,
+                    )}
                   </p>
                 </div>
               </div>
@@ -184,7 +194,8 @@ export default function SubscriptionsPage() {
                 <div>
                   <label className="text-sm font-medium text-gray-500">Current Period</label>
                   <p className="mt-1">
-                    {formatDate(selectedSubscription.current_period_start)} - {formatDate(selectedSubscription.current_period_end)}
+                    {formatDate(selectedSubscription.current_period_start)} -{' '}
+                    {formatDate(selectedSubscription.current_period_end)}
                   </p>
                 </div>
                 <div>
@@ -216,7 +227,7 @@ export default function SubscriptionsPage() {
                     {cancelSubscriptionMutation.isPending ? 'Canceling...' : 'Cancel Subscription'}
                   </button>
                 )}
-                
+
                 <button
                   onClick={() => setSelectedSubscription(null)}
                   className="btn-secondary ml-auto"
@@ -239,7 +250,7 @@ export default function SubscriptionsPage() {
           <h1 className="text-2xl font-bold text-gray-900">Subscriptions</h1>
           <p className="text-gray-600">Manage recurring payments and subscriptions</p>
         </div>
-        
+
         <button
           onClick={() => setShowCreateModal(true)}
           className="btn-primary flex items-center space-x-2"
@@ -264,7 +275,7 @@ export default function SubscriptionsPage() {
               />
             </div>
           </div>
-          
+
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
               <FunnelIcon className="h-4 w-4 text-gray-500" />
@@ -326,24 +337,20 @@ export default function SubscriptionsPage() {
                     <td>
                       <div>
                         <p className="font-medium">{subscription.customer_info.name || 'N/A'}</p>
-                        <p className="text-sm text-gray-500">{subscription.customer_info.email || 'N/A'}</p>
+                        <p className="text-sm text-gray-500">
+                          {subscription.customer_info.email || 'N/A'}
+                        </p>
                       </div>
                     </td>
                     <td className="font-mono">
                       {formatCurrency(subscription.amount, subscription.currency)}
                     </td>
-                    <td>
-                      {formatInterval(subscription.interval, subscription.interval_count)}
-                    </td>
-                    <td>
-                      {getStatusBadge(subscription.status)}
-                    </td>
+                    <td>{formatInterval(subscription.interval, subscription.interval_count)}</td>
+                    <td>{getStatusBadge(subscription.status)}</td>
                     <td className="text-gray-500 text-sm">
                       {formatDate(subscription.next_billing_date)}
                     </td>
-                    <td className="text-gray-500 text-sm">
-                      {formatDate(subscription.created_at)}
-                    </td>
+                    <td className="text-gray-500 text-sm">{formatDate(subscription.created_at)}</td>
                     <td>
                       <button
                         onClick={() => setSelectedSubscription(subscription)}
@@ -365,10 +372,7 @@ export default function SubscriptionsPage() {
             <p className="text-gray-500 mb-6">
               Create your first subscription to start accepting recurring payments
             </p>
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="btn-primary"
-            >
+            <button onClick={() => setShowCreateModal(true)} className="btn-primary">
               Create Subscription
             </button>
           </div>
@@ -385,7 +389,7 @@ export default function SubscriptionsPage() {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-500">Active</p>
               <p className="text-2xl font-semibold text-gray-900">
-                {subscriptions.filter(s => s.status === 'active').length}
+                {subscriptions.filter((s) => s.status === 'active').length}
               </p>
             </div>
           </div>
@@ -399,13 +403,20 @@ export default function SubscriptionsPage() {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-500">Total MRR</p>
               <p className="text-2xl font-semibold text-gray-900">
-                ${subscriptions.filter(s => s.status === 'active' && s.currency === 'usd').reduce((sum, s) => {
-                  const monthlyAmount = s.interval === 'month' ? s.amount : 
-                                     s.interval === 'year' ? s.amount / 12 : 
-                                     s.interval === 'week' ? s.amount * 4.33 :
-                                     s.amount * 30;
-                  return sum + monthlyAmount;
-                }, 0) / 100}
+                $
+                {subscriptions
+                  .filter((s) => s.status === 'active' && s.currency === 'usd')
+                  .reduce((sum, s) => {
+                    const monthlyAmount =
+                      s.interval === 'month'
+                        ? s.amount
+                        : s.interval === 'year'
+                        ? s.amount / 12
+                        : s.interval === 'week'
+                        ? s.amount * 4.33
+                        : s.amount * 30;
+                    return sum + monthlyAmount;
+                  }, 0) / 100}
               </p>
             </div>
           </div>
@@ -419,7 +430,7 @@ export default function SubscriptionsPage() {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-500">Past Due</p>
               <p className="text-2xl font-semibold text-gray-900">
-                {subscriptions.filter(s => s.status === 'past_due').length}
+                {subscriptions.filter((s) => s.status === 'past_due').length}
               </p>
             </div>
           </div>
@@ -432,9 +443,7 @@ export default function SubscriptionsPage() {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-500">Total</p>
-              <p className="text-2xl font-semibold text-gray-900">
-                {subscriptions.length}
-              </p>
+              <p className="text-2xl font-semibold text-gray-900">{subscriptions.length}</p>
             </div>
           </div>
         </div>
@@ -442,7 +451,7 @@ export default function SubscriptionsPage() {
 
       {/* Modals */}
       <SubscriptionDetailModal />
-      
+
       {showCreateModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg max-w-md w-full p-6">
@@ -451,13 +460,10 @@ export default function SubscriptionsPage() {
               Subscription creation is available via API. Check the Integration page for examples.
             </p>
             <div className="flex justify-end space-x-3">
-              <button
-                onClick={() => setShowCreateModal(false)}
-                className="btn-secondary"
-              >
+              <button onClick={() => setShowCreateModal(false)} className="btn-secondary">
                 Close
               </button>
-              <a href="/integration" className="btn-primary">
+              <a href="/app/integration" className="btn-primary">
                 View Integration Guide
               </a>
             </div>

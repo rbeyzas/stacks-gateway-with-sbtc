@@ -20,14 +20,11 @@ export default function NotFoundPage() {
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Link
-            to="/dashboard"
-            className="btn-primary flex items-center justify-center space-x-2"
-          >
+          <Link to="/dashboard" className="btn-primary flex items-center justify-center space-x-2">
             <HomeIcon className="h-5 w-5" />
             <span>Go to Dashboard</span>
           </Link>
-          
+
           <button
             onClick={() => window.history.back()}
             className="btn-secondary flex items-center justify-center space-x-2"
@@ -39,24 +36,22 @@ export default function NotFoundPage() {
 
         {/* Additional Links */}
         <div className="mt-8 pt-8 border-t border-gray-200">
-          <p className="text-sm text-gray-500 mb-4">
-            Need help? Try these common pages:
-          </p>
+          <p className="text-sm text-gray-500 mb-4">Need help? Try these common pages:</p>
           <div className="space-y-2">
             <Link
-              to="/payments"
+              to="/app/payments"
               className="block text-bitcoin-600 hover:text-bitcoin-500 text-sm"
             >
               View Payments
             </Link>
             <Link
-              to="/integration"
+              to="/app/integration"
               className="block text-bitcoin-600 hover:text-bitcoin-500 text-sm"
             >
               Integration Guide
             </Link>
             <Link
-              to="/settings"
+              to="/app/settings"
               className="block text-bitcoin-600 hover:text-bitcoin-500 text-sm"
             >
               Account Settings

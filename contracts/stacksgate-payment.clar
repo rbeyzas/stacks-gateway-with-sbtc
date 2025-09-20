@@ -13,7 +13,7 @@
 (define-constant ERR_INSUFFICIENT_BALANCE (err u402))
 
 ;; Define sBTC contract reference
-(define-constant SBTC_TOKEN 'ST1F7QA2MDF17S807EPA36TSS8AMEFY4KA9TVGWXT.sbtc-token)
+(define-constant SBTC_TOKEN 'ST21XV7WHC8WT5NKD6ZEWWSD9P2RG6BPXS2JGHYKP.custom-sbtc-token)
 
 ;; Data Variables
 (define-data-var payment-nonce uint u0)
